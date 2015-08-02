@@ -1,11 +1,13 @@
 package br.com.gisomarkos.supergas;
 
+import android.content.Intent;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
 
+import com.google.android.gms.location.DetectedActivity;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
@@ -53,7 +55,7 @@ public class MapsActivity extends Activity implements OnMapReadyCallback {
 
 
     @Override
-    public void onMapReady(GoogleMap map) {
+    public void onMapReady(final GoogleMap map) {
 
         GPS gps = new GPS(this);
 
@@ -95,7 +97,7 @@ public class MapsActivity extends Activity implements OnMapReadyCallback {
 
                     LatLng latitudeCamera = new LatLng(cameraPosition.target.latitude, cameraPosition.target.longitude);
 
-                    if(cameraPosition.zoom > 16) {
+                    if(cameraPosition.zoom > 18) {
 
                         for (int i = 0; i < outroLocal.size(); i++) {
 
@@ -132,7 +134,11 @@ public class MapsActivity extends Activity implements OnMapReadyCallback {
 
             @Override
             public void onInfoWindowClick(Marker marker) {
-                Toast.makeText(getApplicationContext(),marker.getTitle(),Toast.LENGTH_LONG).show();
+
+                Intent intent = new Intent(getApplicationContext(), DetalheEscolhaFornecedor.class);
+                intent.putExtra("nome", marker.getTitle());
+                intent.putExtra("posicao", marker.getPosition());
+                startActivity(intent);
             }
         });
 
