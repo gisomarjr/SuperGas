@@ -1,25 +1,21 @@
 package br.com.gisomarkos.supergas;
 
-import android.content.Intent;
-import android.location.Location;
-import android.location.LocationListener;
-import android.location.LocationManager;
-import android.support.v4.app.FragmentActivity;
-import android.os.Bundle;
-
-import com.google.android.gms.location.DetectedActivity;
-import com.google.android.gms.maps.GoogleMap;
-import com.google.android.gms.maps.SupportMapFragment;
-import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.MarkerOptions;
-import com.google.android.gms.maps.*;
-import com.google.android.gms.maps.model.*;
 import android.app.Activity;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.Toast;
 
-import java.lang.reflect.Array;
+import com.google.android.gms.maps.CameraUpdate;
+import com.google.android.gms.maps.CameraUpdateFactory;
+import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.MapFragment;
+import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
+import com.google.android.gms.maps.model.CameraPosition;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
+import com.google.android.gms.maps.model.MarkerOptions;
+
 import java.util.ArrayList;
 
 
@@ -55,7 +51,7 @@ public class MapsActivity extends Activity implements OnMapReadyCallback {
 
 
     @Override
-    public void onMapReady(final GoogleMap map) {
+    public void onMapReady(GoogleMap map) {
 
         GPS gps = new GPS(this);
 
@@ -97,7 +93,7 @@ public class MapsActivity extends Activity implements OnMapReadyCallback {
 
                     LatLng latitudeCamera = new LatLng(cameraPosition.target.latitude, cameraPosition.target.longitude);
 
-                    if(cameraPosition.zoom > 18) {
+                    if(cameraPosition.zoom > 16) {
 
                         for (int i = 0; i < outroLocal.size(); i++) {
 
@@ -134,11 +130,7 @@ public class MapsActivity extends Activity implements OnMapReadyCallback {
 
             @Override
             public void onInfoWindowClick(Marker marker) {
-
-                Intent intent = new Intent(getApplicationContext(), DetalheEscolhaFornecedor.class);
-                intent.putExtra("nome", marker.getTitle());
-                intent.putExtra("posicao", marker.getPosition());
-                startActivity(intent);
+                Toast.makeText(getApplicationContext(),marker.getTitle(),Toast.LENGTH_LONG).show();
             }
         });
 
