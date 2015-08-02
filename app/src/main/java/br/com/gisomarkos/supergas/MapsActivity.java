@@ -17,13 +17,16 @@ import android.os.Bundle;
 import android.util.Log;
 import android.widget.Toast;
 
+import java.lang.reflect.Array;
+import java.util.ArrayList;
+
 
 public class MapsActivity extends Activity implements OnMapReadyCallback {
 
     double latitude;
     double longitude;
     LatLng meuLocal;
-    LatLng outroLocal;
+    ArrayList<LatLng> outroLocal = new ArrayList<>();
     private Marker marker;
     GoogleMap _map;
 
@@ -31,6 +34,7 @@ public class MapsActivity extends Activity implements OnMapReadyCallback {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
+
 
         MapFragment mapFragment = (MapFragment) getFragmentManager()
                 .findFragmentById(R.id.map);
@@ -67,8 +71,14 @@ public class MapsActivity extends Activity implements OnMapReadyCallback {
 
         //seta a localização atual no mapa
         meuLocal = new LatLng(latitude, longitude);
-        outroLocal = new LatLng(-8.060483, -34.901429);
-        //mapCenter = new LatLng(-8.060483, -34.901429);
+
+        outroLocal.add(new LatLng(-8.060483, -34.901429));
+        outroLocal.add(new LatLng(-8.1207278,-34.8931794));
+        outroLocal.add(new LatLng(-8.1116051,-34.9327198));
+        outroLocal.add(new LatLng(-8.1265263,-34.9232858));
+        outroLocal.add(new LatLng(-8.1203119,-34.9542641));
+        outroLocal.add(new LatLng(-8.1228291,-34.9548113));
+        outroLocal.add(new LatLng(-8.1234132,-34.9549615));
 
         //movendo a camera para localização atual
         map.moveCamera(CameraUpdateFactory.newLatLngZoom(meuLocal, 13));
@@ -84,9 +94,18 @@ public class MapsActivity extends Activity implements OnMapReadyCallback {
                 Log.i("Script", "setOnCameraChangeListener()");
 
                     LatLng latitudeCamera = new LatLng(cameraPosition.target.latitude, cameraPosition.target.longitude);
-                    if(distance(latitudeCamera,outroLocal) < 1000) {
-                        addMarker(outroLocal, "Fornecedor", "Gisomar");
-                        Toast.makeText(getApplicationContext(),"chegou no local",Toast.LENGTH_LONG).show();
+
+                    if(cameraPosition.zoom > 16) {
+
+                        for (int i = 0; i < outroLocal.size(); i++) {
+
+                            if (distance(latitudeCamera, outroLocal.get(i)) < 1000) {
+                                addMarker(outroLocal.get(i), "Fornecedor" + i, "Gisomar");
+                            }
+
+                        }
+                    }else{
+                        Toast.makeText(getApplicationContext(),"É necessário aproximar do mapa para verificar fornecedores...",Toast.LENGTH_SHORT).show();
                     }
 					/*if(marker != null){
 						marker.remove();
@@ -118,18 +137,24 @@ public class MapsActivity extends Activity implements OnMapReadyCallback {
         });
 
         // Sets the map type to be "hybrid"
-        map.setMapType(GoogleMap.MAP_TYPE_HYBRID);
+        map.setMapType(GoogleMap.MAP_TYPE_TERRAIN);
         map.setMyLocationEnabled(true);
 
-        CameraPosition cameraPosition = CameraPosition.builder()
-                .target(meuLocal)
-                .zoom(13)
-                .bearing(200)
-                .build();
+        CameraPosition cameraPosition = new CameraPosition.Builder().target(meuLocal).zoom(18).bearing(0).tilt(0).build();
+        CameraUpdate update = CameraUpdateFactory.newCameraPosition(cameraPosition);
 
-        // Animate the change in camera view over 3 seconds
-        map.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition),
-                3000, null);
+        map.animateCamera(update, 3000, new GoogleMap.CancelableCallback(){
+            @Override
+            public void onCancel() {
+                Log.i("Script", "CancelableCallback.onCancel()");
+            }
+
+            @Override
+            public void onFinish() {
+                Log.i("Script", "CancelableCallback.onFinish()");
+            }
+        });
+
     }
 
     public static double distance(LatLng StartP, LatLng EndP) {
