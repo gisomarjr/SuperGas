@@ -36,6 +36,7 @@ import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Calendar;
 
+import br.com.gisomarkos.supergas.Controller.CFornecedor;
 import br.com.gisomarkos.supergas.Model.Fornecedor;
 
 
@@ -48,7 +49,6 @@ public class MapsActivity extends Activity implements OnMapReadyCallback {
     ArrayList<LatLng> outroLocal = new ArrayList<>();
     ArrayList<Fornecedor> listFornecedor = new ArrayList<>();
     GoogleMap _map;
-
 
 
     @Override
@@ -80,6 +80,9 @@ public class MapsActivity extends Activity implements OnMapReadyCallback {
         else{
             Log.i("Script", "Alarme ja ativo");
         }
+
+        /*CFornecedor cFornecedor = new CFornecedor();
+        cFornecedor.execute("");*/
 
     }
 
