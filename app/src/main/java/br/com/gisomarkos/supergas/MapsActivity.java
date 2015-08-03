@@ -1,31 +1,49 @@
 package br.com.gisomarkos.supergas;
 
+import android.app.AlarmManager;
+import android.app.Notification;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
+import android.content.Intent;
+import android.graphics.BitmapFactory;
+import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
+import android.media.Ringtone;
+import android.media.RingtoneManager;
+import android.net.Uri;
+import android.support.v4.app.FragmentActivity;
+import android.os.Bundle;
+
+import com.google.android.gms.location.DetectedActivity;
+import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.maps.*;
+import com.google.android.gms.maps.model.*;
 import android.app.Activity;
 import android.os.Bundle;
+import android.support.v4.app.NotificationCompat;
 import android.util.Log;
+import android.view.View;
+import android.view.Window;
+import android.widget.ArrayAdapter;
+import android.widget.ListView;
 import android.widget.Toast;
 
-import com.google.android.gms.maps.CameraUpdate;
-import com.google.android.gms.maps.CameraUpdateFactory;
-import com.google.android.gms.maps.GoogleMap;
-import com.google.android.gms.maps.MapFragment;
-import com.google.android.gms.maps.OnMapReadyCallback;
-import com.google.android.gms.maps.model.BitmapDescriptorFactory;
-import com.google.android.gms.maps.model.CameraPosition;
-import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.Marker;
-import com.google.android.gms.maps.model.MarkerOptions;
-
+import java.lang.reflect.Array;
 import java.util.ArrayList;
+import java.util.Calendar;
 
 
 public class MapsActivity extends Activity implements OnMapReadyCallback {
 
-    double latitude;
-    double longitude;
+    double latitudeAtual;
+    double longitudeAtual;
     LatLng meuLocal;
+    Marker marker;
     ArrayList<LatLng> outroLocal = new ArrayList<>();
-    private Marker marker;
     GoogleMap _map;
 
     @Override
@@ -39,7 +57,38 @@ public class MapsActivity extends Activity implements OnMapReadyCallback {
         mapFragment.getMapAsync(this);
 
 
+        boolean alarmeAtivo = (PendingIntent.getBroadcast(this, 0, new Intent("ALARME_DISPARADO"), PendingIntent.FLAG_NO_CREATE) == null);
+
+        if(alarmeAtivo){
+            Log.i("Script", "Novo alarme");
+
+            Intent intent = new Intent("ALARME_DISPARADO");
+            PendingIntent p = PendingIntent.getBroadcast(this, 0, intent, 0);
+
+            Calendar c = Calendar.getInstance();
+            c.setTimeInMillis(System.currentTimeMillis());
+            c.add(Calendar.SECOND, 3);
+
+            AlarmManager alarme = (AlarmManager) getSystemService(ALARM_SERVICE);
+            alarme.setRepeating(AlarmManager.RTC_WAKEUP, c.getTimeInMillis(), 5000, p);
+        }
+        else{
+            Log.i("Script", "Alarme ja ativo");
+        }
+
     }
+
+    @Override
+    public void onDestroy(){
+        Intent intent = new Intent("ALARME_DISPARADO");
+		PendingIntent p = PendingIntent.getBroadcast(this, 0, intent, 0);
+
+		AlarmManager alarme = (AlarmManager) getSystemService(ALARM_SERVICE);
+		alarme.cancel(p);
+        super.onDestroy();
+    }
+
+
 
     public void addMarker(LatLng latLng, String title, String snippet){
         MarkerOptions options = new MarkerOptions();
@@ -51,15 +100,15 @@ public class MapsActivity extends Activity implements OnMapReadyCallback {
 
 
     @Override
-    public void onMapReady(GoogleMap map) {
+    public void onMapReady(final GoogleMap map) {
 
         GPS gps = new GPS(this);
 
         this._map = map;
 
         if(gps.canGetLocation()){
-            latitude = gps.getLatitude();
-            longitude = gps.getLongitude();
+            latitudeAtual = gps.getLatitude();
+            longitudeAtual = gps.getLongitude();
         }else{
             // não pôde pegar a localização
             // GPS ou a Rede não está habilitada
@@ -68,7 +117,7 @@ public class MapsActivity extends Activity implements OnMapReadyCallback {
         }
 
         //seta a localização atual no mapa
-        meuLocal = new LatLng(latitude, longitude);
+        meuLocal = new LatLng(latitudeAtual, longitudeAtual);
 
         outroLocal.add(new LatLng(-8.060483, -34.901429));
         outroLocal.add(new LatLng(-8.1207278,-34.8931794));
@@ -79,21 +128,17 @@ public class MapsActivity extends Activity implements OnMapReadyCallback {
         outroLocal.add(new LatLng(-8.1234132,-34.9549615));
 
         //movendo a camera para localização atual
-        map.moveCamera(CameraUpdateFactory.newLatLngZoom(meuLocal, 13));
-
-        // You can customize the marker image using images bundled with
-        // your app, or dynamically generated bitmaps.
-
+        _map.moveCamera(CameraUpdateFactory.newLatLngZoom(meuLocal, 13));
 
         // EVENTS - mudou a posicao da camera? pega latitude e longitude
-        map.setOnCameraChangeListener(new GoogleMap.OnCameraChangeListener() {
+        _map.setOnCameraChangeListener(new GoogleMap.OnCameraChangeListener() {
             @Override
             public void onCameraChange(CameraPosition cameraPosition) {
                 Log.i("Script", "setOnCameraChangeListener()");
 
                     LatLng latitudeCamera = new LatLng(cameraPosition.target.latitude, cameraPosition.target.longitude);
 
-                    if(cameraPosition.zoom > 16) {
+                    if(cameraPosition.zoom > 17) {
 
                         for (int i = 0; i < outroLocal.size(); i++) {
 
@@ -105,43 +150,32 @@ public class MapsActivity extends Activity implements OnMapReadyCallback {
                     }else{
                         Toast.makeText(getApplicationContext(),"É necessário aproximar do mapa para verificar fornecedores...",Toast.LENGTH_SHORT).show();
                     }
-					/*if(marker != null){
-						marker.remove();
-					}
-					customAddMarker(new LatLng(cameraPosition.target.latitude, cameraPosition.target.longitude), "1: Marcador Alterado", "O Marcador foi reposicionado");
-					*/
+
             }
         });
 
-           //se a distancia do local atual for menor  do que algum metro definido - adicionar o marcador no mapa
-         /*   if(distance(meuLocal,outroLocal) <= 1000) {
 
-                final Marker makerMap = map.addMarker(new MarkerOptions()
-                        .icon(BitmapDescriptorFactory.fromResource(R.drawable.icone_gas_pequeno))
-                        .anchor(0.0f, 1.0f) // Anchors the marker on the bottom left
-                        .title("Fornecedor")
-                        .snippet("Nome: Gisomar")
-                        .position(outroLocal));//-8.060483, -34.901429
-                Toast.makeText(this,"distancia: " + distance(meuLocal,outroLocal) + "metros",Toast.LENGTH_LONG).show();
-
-            }*/
-
-        map.setOnInfoWindowClickListener(new GoogleMap.OnInfoWindowClickListener() {
+        _map.setOnInfoWindowClickListener(new GoogleMap.OnInfoWindowClickListener() {
 
             @Override
             public void onInfoWindowClick(Marker marker) {
-                Toast.makeText(getApplicationContext(),marker.getTitle(),Toast.LENGTH_LONG).show();
+
+                Intent intent = new Intent(getApplicationContext(), DetalheEscolhaFornecedor.class);
+                intent.putExtra("nome", marker.getTitle());
+                intent.putExtra("latitute", marker.getPosition().latitude);
+                intent.putExtra("longitude", marker.getPosition().longitude);
+                startActivity(intent);
             }
         });
 
         // Sets the map type to be "hybrid"
-        map.setMapType(GoogleMap.MAP_TYPE_TERRAIN);
-        map.setMyLocationEnabled(true);
+        _map.setMapType(GoogleMap.MAP_TYPE_TERRAIN);
+        _map.setMyLocationEnabled(true);
 
         CameraPosition cameraPosition = new CameraPosition.Builder().target(meuLocal).zoom(18).bearing(0).tilt(0).build();
         CameraUpdate update = CameraUpdateFactory.newCameraPosition(cameraPosition);
 
-        map.animateCamera(update, 3000, new GoogleMap.CancelableCallback(){
+        _map.animateCamera(update, 3000, new GoogleMap.CancelableCallback(){
             @Override
             public void onCancel() {
                 Log.i("Script", "CancelableCallback.onCancel()");

@@ -7,6 +7,8 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.TextView;
 
+import com.google.android.gms.maps.model.LatLng;
+
 import br.com.gisomarkos.supergas.R;
 
 public class DetalheEscolhaFornecedor extends ActionBarActivity {
@@ -18,13 +20,17 @@ public class DetalheEscolhaFornecedor extends ActionBarActivity {
 
         Intent intent = getIntent();
         String nome = intent.getStringExtra("nome");
-        String posicao = intent.getStringExtra("posicao");
+        Double latitude = intent.getDoubleExtra("latitute",1);
+        Double longitude = intent.getDoubleExtra("longitude",1);
 
         TextView nomeText = (TextView) findViewById(R.id.nome);
         nomeText.setText(nome);
 
-        TextView posicaoText = (TextView) findViewById(R.id.posicao);
-        posicaoText.setText(posicao);
+        TextView latitudeText = (TextView) findViewById(R.id.latitude);
+        latitudeText.setText("latitude:" +latitude);
+
+        TextView longitudeText = (TextView) findViewById(R.id.longitude);
+        longitudeText.setText("longitude" +longitude);
     }
 
 
