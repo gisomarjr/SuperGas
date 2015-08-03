@@ -36,6 +36,8 @@ import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Calendar;
 
+import br.com.gisomarkos.supergas.Model.Fornecedor;
+
 
 public class MapsActivity extends Activity implements OnMapReadyCallback {
 
@@ -44,7 +46,10 @@ public class MapsActivity extends Activity implements OnMapReadyCallback {
     LatLng meuLocal;
     Marker marker;
     ArrayList<LatLng> outroLocal = new ArrayList<>();
+    ArrayList<Fornecedor> listFornecedor = new ArrayList<>();
     GoogleMap _map;
+
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

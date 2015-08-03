@@ -46,6 +46,8 @@ public class BroadcastReceiverAux extends BroadcastReceiver {
 			Ringtone toque = RingtoneManager.getRingtone(context, som);
 			toque.play();
 		}
-		catch(Exception e){}
+		catch(Exception e){
+
+		}
 	}
 }

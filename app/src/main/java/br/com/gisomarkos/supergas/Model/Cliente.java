@@ -6,4 +6,6 @@ package br.com.gisomarkos.supergas.Model;
 public class Cliente {
     public int telefone;
     public String nome;
+    public Endereco endereco;
+
 }
